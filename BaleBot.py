@@ -3,16 +3,18 @@ from time import sleep
 from telegram import Bot, Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from rps import RPS
+# turning on logging to see everything in terminal
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
 
 ingame = lgdone = botworking = False
 winner_point = 0
 round_number = 1
+# keyboard templates
 empty_keyboard = [[]]
 rps_keyboard = [['سنگ','کاغذ','قیچی']]
 
-
+# commands
 def start(bot: Bot, update: Update):
     global botworking
     botworking = True
@@ -25,6 +27,8 @@ def cancel(bot: Bot, update: Update):
     round_number = 1
     update.message.reply_text('بازی متوقف شد.\nاگه خواستی دوباره بازی کنی کافیه بنویسی /start\nمن همینجا منتظرم. 😉',reply_markup= ReplyKeyboardMarkup(empty_keyboard,one_time_keyboard=True))
 
+
+# This function andswers user for round count input
 def round_input(bot: Bot, update: Update, isdigit):
     if isdigit:
         global round_count, ingame
@@ -34,6 +38,7 @@ def round_input(bot: Bot, update: Update, isdigit):
     else:
         update.message.reply_text('رفیق یه *عدد* بنویس خواهشا! صفر و منفی هم نباشه .')
 
+# This function writes Rock Paper Scissor and If all rounds are done it shows the overal winner then Turns off the bot 
 def game_luncher(bot: Bot, update: Update):
     global round_number, round_count, ingame, lgdone, botworking, winner_point
     if round_count != 0:
@@ -59,12 +64,14 @@ def game_luncher(bot: Bot, update: Update):
         winner_point = 0
         round_number = 1
 
+# This function runs the rps class from rps.py file and Shows the winner of round
 def game_judge(bot: Bot, update: Update):
     global winner_point
     game = RPS(update.message.text)
     update.message.reply_text(f'من {game.bot_choice} رو انتخاب کردم پس {game.winer_string}')
     winner_point += game.win_status
 
+# This function checks the messages and Runs the proper function for that message
 def conversation_handler(bot: Bot, update: Update):
     global ingame, round_count, round_number, lg_done
     if not ingame and botworking:
@@ -83,12 +90,15 @@ def conversation_handler(bot: Bot, update: Update):
         game_luncher(bot, update)
 
 
-
+# The main function
 def main():
+    # Token comes from Bot father, if you delete the base_url the code will run for telegram bot
     updater = Updater(token="88669327:9DYGLT5zJiv8xzQPNEK6NayXgffGtJY4rKdNxUL7",base_url="https://tapi.bale.ai/")
     
+    # adding dispatcher to register handlers
     dp = updater.dispatcher
 
+    # registering handelers
     dp.add_handler(CommandHandler('start',start))
     dp.add_handler(CommandHandler('cancel',cancel))
     dp.add_handler(MessageHandler(Filters.text,conversation_handler))
@@ -96,5 +106,6 @@ def main():
     updater.start_polling(poll_interval=1)
     updater.idle()
 
+# Driver to run the app
 if __name__ == '__main__':
     main()
